@@ -1,0 +1,29 @@
+version: '3.8' 
+
+services: 
+  my-first-api: 
+    build: .   
+    command: ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8888", "--reload"] 
+    volumes: 
+      - .:/faseapi-mysql-db
+    ports:  
+      - "8888:8888"
+
+  db:
+    image: mysql:8.0
+    restart: always
+    environment:
+      MYSQL_USER: root
+      MYSQL_DATABASE: workflow
+      MYSQL_ALLOW_EMPTY_PASSWORD: "yes"
+      MYSQL_ROOT_PASSWORD: ""
+      MYSQL_TCP_PORT: 8889
+    ports:
+      - "8889:8889"
+    expose:
+      - 8889
+    volumes:
+      - mysql_data:/var/lib/mysql
+
+volumes:
+  mysql_data:
