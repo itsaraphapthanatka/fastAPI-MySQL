@@ -1,27 +1,23 @@
-version: '3.8' 
+version: '3.8'
 
-services: 
-  my-first-api: 
-    build: .   
-    command: ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8888", "--reload"] 
-    volumes: 
+services:
+  my-first-api:
+    build: .
+    command: ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8888", "--reload"]
+    volumes:
       - .:/faseapi-mysql-db
-    ports:  
+    ports:
       - "8888:8888"
 
   db:
     image: mysql:8.0
     restart: always
     environment:
-      MYSQL_USER: root
+      MYSQL_ROOT_PASSWORD: "Mc5s714040##"  # ตั้งรหัสผ่าน root ให้ชัดเจน
       MYSQL_DATABASE: workflow
-      MYSQL_ALLOW_EMPTY_PASSWORD: "yes"
-      MYSQL_ROOT_PASSWORD: ""
-      MYSQL_TCP_PORT: 8889
+      # ลบ MYSQL_USER และ MYSQL_ALLOW_EMPTY_PASSWORD ออก
     ports:
-      - "8889:8889"
-    expose:
-      - 8889
+      - "8889:3306"  # แผนที่พอร์ต 8889 บน host ไป 3306 ใน container
     volumes:
       - mysql_data:/var/lib/mysql
 

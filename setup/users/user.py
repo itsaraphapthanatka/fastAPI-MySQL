@@ -9,6 +9,7 @@ from .models import User
 from typing import List
 from pydantic import BaseModel
 from datetime import datetime
+from ..users.auth import verify_token
 
 # โหลด environment variables
 load_dotenv()
@@ -29,6 +30,7 @@ class UserBase(BaseModel):
     m_email: str
     m_position: str
     m_department: str
+    uimg: str
 
 class UserCreate(UserBase):
     pass
@@ -47,6 +49,9 @@ def get_db():
         yield db
     finally:
         db.close()
+
+APP_URL = os.getenv("APP_URL")
+IMAGE_URL = os.getenv("IMAGE_URL")
 
 @router.post("/", response_model=dict)
 async def create_user(user: UserCreate, db: Session = Depends(get_db)):
@@ -81,12 +86,13 @@ async def read_user(user_id: int, db: Session = Depends(get_db)):
         "m_lastname": user.m_lastname,
         "m_email": user.m_email,
         "m_position": user.m_position,
-        "m_department": user.m_department
+        "m_department": user.m_department,
+        "uimg": (IMAGE_URL or "") + (str(user.uimg) or "")
     }
 
 @router.get("/", response_model=List[dict])
 async def read_users(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
-    users = db.query(User).offset(skip).limit(limit).all()
+    users = db.query(User).order_by(User.m_id.asc()).offset(skip).limit(limit).all()
     return [{
         "m_id": user.m_id,
         "m_code": user.m_code,
@@ -94,7 +100,8 @@ async def read_users(skip: int = 0, limit: int = 100, db: Session = Depends(get_
         "m_lastname": user.m_lastname,
         "m_email": user.m_email,
         "m_position": user.m_position,
-        "m_department": user.m_department
+        "m_department": user.m_department,
+        "uimg": (IMAGE_URL or "") + (str(user.uimg) or "")
     } for user in users]
 
 @router.put("/{user_id}", response_model=dict)

@@ -9,6 +9,7 @@ from .models import Project
 from typing import List
 from pydantic import BaseModel
 from datetime import datetime
+from ..users.auth import verify_token 
 
 # โหลด environment variables
 load_dotenv()
@@ -74,18 +75,39 @@ async def create_project(project: ProjectCreate, db: Session = Depends(get_db)):
 @router.get("/{project_id}", response_model=dict)
 async def read_project(project_id: int, db: Session = Depends(get_db)):
     project = db.query(Project).filter(Project.project_id == project_id).first()
+    totalCount = db.query(Project).count()
     if project is None:
         raise HTTPException(status_code=404, detail="ไม่พบโครงการ")
     return {
-        "project_id": project.project_id,
-        "project_code": project.project_code,
-        "project_name": project.project_name,
-        "project_worktype": project.project_worktype,
-        "project_type": project.project_type,
-        "project_address": project.project_address,
-        "project_cname": project.project_cname,
-        "project_tel": project.project_tel,
-        "project_email": project.project_email
+        "resultList": [ 
+            {
+                "project_id": project.project_id,
+                "project_code": project.project_code,
+                "project_name": project.project_name,
+                "project_worktype": project.project_worktype,
+                "project_type": project.project_type,
+                "project_address": project.project_address,
+                "project_cname": project.project_cname,
+                "project_tel": project.project_tel,
+                "project_email": project.project_email
+            }
+        ],        
+        "allRecords": totalCount,
+        "TotalPage": (totalCount // 100) + (1 if totalCount % 100 > 0 else 0),
+        "CurrentPage": 1,
+        "recordsPerPage": 50,
+        "pageSize": 100,
+        "navigatePages": 8,
+        "navigatepageNums": [i for i in range(1, (totalCount // 100) + (1 if totalCount % 100 > 0 else 0) + 1)],
+        "isFirstPage": True,
+        "isLastPage": True,
+        "hasPreviousPage": False,
+        "hasNextPage": False,
+        "navigateFirstPage": 1,
+        "navigateLastPage": (totalCount // 100) + (1 if totalCount  % 100 > 0 else 0),
+        "nextPage": None,
+        "prePage": None
+
     }
 
 @router.get("/", response_model=List[dict])
